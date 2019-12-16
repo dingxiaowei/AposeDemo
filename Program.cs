@@ -1,6 +1,7 @@
 ﻿using Aspose.Words;
 using Aspose.Words.Drawing;
 using Aspose.Words.Drawing.Charts;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,22 +14,49 @@ namespace AposeWordDemo
         {
             //InsertChart();
             //FileBookMark();
-
-            ReadTables();
+            NPOIReadTables("template/testdata.docx");
+            //AposeReadTables();
             Console.Read();
         }
 
-        static void ReadTables()
+        static void AposeReadTables()
         {
             //https://blog.csdn.net/knqiufan/article/details/77847370
             //打开word文档，fileName是路径地址，需要扩展名
-            Aspose.Words.Document doc = new Document("template/testdata2.docx");
+            var doc = new Aspose.Words.Document("template/testdata2.docx");
             var nodeCollection = doc.GetChildNodes(NodeType.Table, true);
             for (int t = 0; t < nodeCollection.Count; t++)
             {
                 var table = nodeCollection[t] as Aspose.Words.Tables.Table;
                 ReadOneTable(table);
                 Console.WriteLine("----------------------------");
+            }
+        }
+
+        static void NPOIReadTables(string filePath)
+        {
+            XWPFDocument document = null;
+            try
+            {
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    document = new XWPFDocument(file);
+                    foreach (var table in document.Tables)
+                    {
+                        for (int i = 0; i < table.Rows.Count; i++)
+                        {
+                            var rowCells = table.Rows[i].GetTableCells();
+                            for (int j = 0; j < rowCells.Count; j++)
+                            {
+                                Console.WriteLine(rowCells[j].GetText());
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(string.Format("文件{0}打开失败，错误：{1}", new string[] { filePath, e.ToString() }));
             }
         }
 
@@ -45,7 +73,7 @@ namespace AposeWordDemo
 
         static void FileBookMark()
         {
-            Document doc = new Document("template/测试合同.docx");
+            Aspose.Words.Document doc = new Aspose.Words.Document("template/测试合同.docx");
             var dic = new Dictionary<string, string>();
             dic.Add("合同编号", "TY2018036");
             dic.Add("项目名称", "宝安区数字化城管系统和三个一系统相关功能拓展升级项目");
@@ -81,7 +109,7 @@ namespace AposeWordDemo
         /// </summary>
         static void InsertChart()
         {
-            Document doc = new Document();
+            Aspose.Words.Document doc = new Aspose.Words.Document();
             DocumentBuilder builder = new DocumentBuilder(doc);
 
             // Add chart with default data. You can specify different chart types and sizes.
